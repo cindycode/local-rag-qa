@@ -55,7 +55,7 @@ ollama pull bge-m3     # 嵌入模型（约 1GB，负责把文本转成向量，
 
 ### 3. 准备文档
 
-建一个目录，把 `.txt` 文档丢进去（暂以 txt 起步，后续阶段扩展 PDF/Markdown）。
+建一个目录，把 `.txt`、`.md`、`.pdf` 文档丢进去（支持三种格式；PDF 需要 `pypdf` 依赖，已在 requirements 里）。
 
 ### 4. 建索引 + 问答
 
@@ -82,6 +82,31 @@ python qa.py /path/to/your/docs "你的问题"
 
 ---
 
+## 验证准确性（RAGAS 评测）
+
+用 [RAGAS](https://docs.ragas.io) 的 LLM-as-Judge 给知识库打分，四个指标（0~1）：
+
+| 指标 | 含义 |
+|---|---|
+| faithfulness | 答案忠实度：有没有被检索上下文支持（测幻觉） |
+| answer_relevancy | 答案相关性：有没有正面回答问题 |
+| context_precision | 上下文精度：检索到的片段里相关的占比 |
+| context_recall | 上下文召回：该召回的片段都召回了没 |
+
+```bash
+# 先装评测依赖
+pip install ragas datasets
+
+# 跑评测（Ollama 保持运行）
+cd stage1-langgraph
+python ../eval/eval_qa.py --docs_dir ./sample_docs
+```
+
+结果会打印每道题分数 + 平均分，并落到 `eval/ragas_result.csv`。
+**四阶段换内核时各跑一遍，就能横向对比「哪个内核检索/生成更准」**——这是本仓库「用评测逼出内核优劣」的核心。
+
+---
+
 ## 项目结构
 
 ```
@@ -96,6 +121,7 @@ local-rag-qa/
 ├── stage3-deepseek/    # （规划中）DeepSeek Super-Agent 内核
 ├── stage4-codex/       # （规划中）Codex 内核
 ├── docs/               # 各内核的设计笔记
+├── eval/               # RAGAS 评测（qa_testset.py 测试集 + eval_qa.py 评测脚本）
 └── README.md
 ```
 

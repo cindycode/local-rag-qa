@@ -28,7 +28,11 @@ local-rag-qa · Stage 1 · LangGraph 内核
 
 from typing import TypedDict, List, Optional
 
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.document_loaders import (
+    DirectoryLoader,
+    TextLoader,
+    PyPDFLoader,
+)
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import ChatOllama
@@ -110,11 +114,38 @@ def build_graph(retriever, llm) -> object:
 # ---------------------------------------------------------------------------
 # 5. 索引构建：本地文档切块、向量化、存入 Qdrant（本地嵌入式）
 # ---------------------------------------------------------------------------
-def build_index(docs_dir: str, persist_dir: str = "./qdrant_db"):
-    loader = DirectoryLoader(
-        docs_dir, glob="**/*.txt", loader_cls=TextLoader, show_progress=True
+def _load_documents(docs_dir: str):
+    """加载 txt / md / pdf 三种格式，合并成统一文档列表。
+
+    多格式支持是「真知识库」的第一步：读者的资料不会全是 txt，
+    通常混着 PDF（论文/报告）和 Markdown（笔记）。
+    """
+    docs = []
+    # txt + md 走文本 loader
+    txt_loader = DirectoryLoader(
+        docs_dir, glob="**/*.txt", loader_cls=TextLoader, show_progress=False
     )
-    docs = loader.load()
+    md_loader = DirectoryLoader(
+        docs_dir, glob="**/*.md", loader_cls=TextLoader, show_progress=False
+    )
+    docs += txt_loader.load()
+    docs += md_loader.load()
+
+    # pdf 走 PyPDFLoader（需要 pypdf 依赖）
+    pdf_loader = DirectoryLoader(
+        docs_dir, glob="**/*.pdf", loader_cls=PyPDFLoader, show_progress=False
+    )
+    try:
+        docs += pdf_loader.load()
+    except Exception as e:
+        # 没装 pypdf 或目录无 pdf 时，跳过并提示，不阻塞 txt/md
+        print(f"  [提示] PDF 加载跳过：{e}（如需要 PDF 支持，pip install pypdf）")
+
+    return docs
+
+
+def build_index(docs_dir: str, persist_dir: str = "./qdrant_db"):
+    docs = _load_documents(docs_dir)
     splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
     chunks = splitter.split_documents(docs)
 
