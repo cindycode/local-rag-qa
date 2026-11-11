@@ -1,0 +1,14 @@
+LangGraph 是 LangChain 团队推出的一个用于构建有状态、多参与者（multi-actor）应用的低级编排框架。
+
+它的核心概念是 StateGraph（状态图）。你用 StateGraph 把整个应用建模成一张图：
+- 节点（node）：一个步骤，通常是一个函数，接收状态、返回状态的部分更新。
+- 边（edge）：节点之间的流转方向，决定执行完一个节点后接下来走哪个节点。
+- 状态（state）：整张图共享的一份数据，用 TypedDict 定义，节点只读写自己关心的字段。
+
+与传统的链式（Chain）不同，LangGraph 的优势在于：
+1. 支持循环（cycle），可以做 ReAct 式的「思考-行动-观察」循环。
+2. 支持分支（conditional edges），根据状态动态决定下一步。
+3. 支持持久化（checkpointer），可以中断、恢复、回溯。
+
+一个最小的 RAG 应用，就是两个节点：retrieve（检索）和 generate（生成），
+中间用状态传递「问题」和「检索到的文档片段」。

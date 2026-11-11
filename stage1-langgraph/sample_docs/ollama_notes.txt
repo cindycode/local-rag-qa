@@ -1,0 +1,13 @@
+Ollama 是一个在本地运行大语言模型的工具，让你不用联网、零 API 成本就能用上 LLM。
+
+常用命令：
+- ollama serve：启动 Ollama 服务。
+- ollama pull <model>：下载模型，例如 qwen3:8b、llama3.2。
+- ollama list：查看已下载的模型。
+- ollama run <model>：进入交互式对话。
+
+本项目的默认配置：
+- 生成模型：qwen3:8b（负责写答案）
+- 嵌入模型：nomic-embed-text（负责把文本转成向量）
+
+嵌入模型和生成模型是分开的，因为它们的任务不同：嵌入模型追求「语义相似」，生成模型追求「会说话」。

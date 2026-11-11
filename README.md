@@ -43,8 +43,8 @@ pip install -r stage1-langgraph/requirements.txt
 ### 2. 启动本地 Ollama 并拉模型
 
 ```bash
-ollama serve
-ollama pull qwen3:8b          # 生成模型
+ollama serve                   # 在一个独立终端保持运行（macOS 首次会弹授权，点允许）
+ollama pull qwen3:8b          # 生成模型（约 5GB，首次较慢）
 ollama pull nomic-embed-text  # 向量化模型
 ```
 
@@ -54,12 +54,26 @@ ollama pull nomic-embed-text  # 向量化模型
 
 ### 4. 建索引 + 问答
 
+**方式 A：Web 界面（推荐）**
+
+```bash
+cd stage1-langgraph
+uvicorn app:app --reload --port 8000
+```
+
+浏览器打开 http://127.0.0.1:8000，在页面上填文档目录、建索引、提问。
+答案下方会展示「检索到的证据片段」，这是 RAG 与普通聊天最大的区别：答案有据可查。
+
+**方式 B：命令行**
+
 ```bash
 cd stage1-langgraph
 python qa.py /path/to/your/docs "你的问题"
 ```
 
 首次运行会建索引（较慢），之后复用本地 `chroma_db/`，直接问答。
+
+> 仓库自带 `sample_docs/` 测试文档，可用它先跑通。
 
 ---
 
@@ -68,7 +82,10 @@ python qa.py /path/to/your/docs "你的问题"
 ```
 local-rag-qa/
 ├── stage1-langgraph/   # LangGraph 内核：基础 RAG
-│   ├── qa.py
+│   ├── qa.py           # 核心引擎（StateGraph + retrieve/generate）
+│   ├── app.py          # FastAPI 后端（/api/ingest + /api/chat）
+│   ├── static/index.html  # 单页问答前端
+│   ├── sample_docs/    # 测试文档
 │   └── requirements.txt
 ├── stage2-deerflow/    # （规划中）DeerFlow 内核
 ├── stage3-deepseek/    # （规划中）DeepSeek Super-Agent 内核
