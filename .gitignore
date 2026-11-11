@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
 chroma_db/
+qdrant_db/
 .DS_Store

@@ -43,10 +43,15 @@ pip install -r stage1-langgraph/requirements.txt
 ### 2. 启动本地 Ollama 并拉模型
 
 ```bash
-ollama serve                   # 在一个独立终端保持运行（macOS 首次会弹授权，点允许）
-ollama pull qwen3:8b          # 生成模型（约 5GB，首次较慢）
-ollama pull nomic-embed-text  # 向量化模型
+ollama serve            # 在一个独立终端保持运行（macOS 首次会弹授权，点允许）
+ollama pull qwen3:8b   # 生成模型（约 5GB，负责写答案，中文问答强）
+ollama pull bge-m3     # 嵌入模型（约 1GB，负责把文本转成向量，中文语义最强）
 ```
+
+> 选型说明：嵌入模型用 **bge-m3**（BAAI 智源，中文语义向量标杆），而非默认的
+> nomic-embed-text，因为本项目文档和提问都是中文，bge-m3 的召回质量明显更好。
+> 向量库用 **Qdrant**（本地嵌入式模式，免 Docker），支持按元数据过滤，是后续
+> 「混合检索」升级的基础。
 
 ### 3. 准备文档
 
@@ -71,7 +76,7 @@ cd stage1-langgraph
 python qa.py /path/to/your/docs "你的问题"
 ```
 
-首次运行会建索引（较慢），之后复用本地 `chroma_db/`，直接问答。
+首次运行会建索引（较慢），之后复用本地 `qdrant_db/`，直接问答。
 
 > 仓库自带 `sample_docs/` 测试文档，可用它先跑通。
 
@@ -82,7 +87,7 @@ python qa.py /path/to/your/docs "你的问题"
 ```
 local-rag-qa/
 ├── stage1-langgraph/   # LangGraph 内核：基础 RAG
-│   ├── qa.py           # 核心引擎（StateGraph + retrieve/generate）
+│   ├── qa.py           # 核心引擎（StateGraph + retrieve/generate + Qdrant 存储）
 │   ├── app.py          # FastAPI 后端（/api/ingest + /api/chat）
 │   ├── static/index.html  # 单页问答前端
 │   ├── sample_docs/    # 测试文档

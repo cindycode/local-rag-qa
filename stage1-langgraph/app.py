@@ -45,7 +45,10 @@ def ingest(req: IngestRequest):
     _DOCS_DIR = req.docs_dir
     graph, vectorstore = build_qa_pipeline(req.docs_dir)
     _GRAPH = graph
-    return {"ok": True, "docs_dir": req.docs_dir, "chunks": vectorstore._collection.count()}
+    # Qdrant 的向量块数量，从 collection info 里取
+    client = vectorstore.client
+    info = client.get_collection(vectorstore.collection_name)
+    return {"ok": True, "docs_dir": req.docs_dir, "chunks": info.points_count}
 
 
 @app.post("/api/chat")
