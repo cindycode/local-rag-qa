@@ -44,7 +44,7 @@ pip install -r stage1-langgraph/requirements.txt
 
 ```bash
 ollama serve            # 在一个独立终端保持运行（macOS 首次会弹授权，点允许）
-ollama pull qwen3:8b   # 生成模型（约 5GB，负责写答案，中文问答强）
+ollama pull qwen3:4b   # 生成模型（约 2.4GB，负责写答案；网络好可换 qwen3:8b 效果更佳）
 ollama pull bge-m3     # 嵌入模型（约 1GB，负责把文本转成向量，中文语义最强）
 ```
 

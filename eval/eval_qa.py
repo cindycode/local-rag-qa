@@ -17,7 +17,7 @@ local-rag-qa · RAGAS 评测脚本
     python ../eval/eval_qa.py --docs_dir ./sample_docs
 
 依赖：
-    ollama serve 已启动，且已 pull bge-m3 和 qwen3:8b（零 API 成本）。
+    ollama serve 已启动，且已 pull bge-m3 和 qwen3:4b（零 API 成本）。
 """
 
 import os

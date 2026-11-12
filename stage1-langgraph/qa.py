@@ -9,7 +9,7 @@ local-rag-qa · Stage 1 · LangGraph 内核
 存储与模型选型（本地全离线，零 API 成本）：
 - 向量库：Qdrant（本地嵌入式模式，QdrantClient(path=...)，免 Docker）
 - 嵌入模型：bge-m3（BAAI 智源，中文语义向量标杆）
-- 生成模型：qwen3:8b（千问，中文问答强）
+- 生成模型：qwen3:4b（千问，中文问答强；网络受限时用 4b，可换 8b 效果更好）
 
 本文件是「核心引擎」，同时服务两种入口：
 1. CLI：python qa.py <文档目录> [问题]
@@ -46,7 +46,7 @@ from langgraph.graph import StateGraph, START, END
 # 配置（本地离线默认值，可用环境变量覆盖）
 # ---------------------------------------------------------------------------
 EMBED_MODEL = "bge-m3"          # 嵌入模型：中文语义向量
-GEN_MODEL = "qwen3:8b"          # 生成模型：中文问答
+GEN_MODEL = "qwen3:4b"          # 生成模型：中文问答（网络受限时用 4b，效果略降但下载快）
 CHUNK_SIZE = 500                # 切块大小
 CHUNK_OVERLAP = 50              # 切块重叠
 TOP_K = 3                       # 检索召回条数
@@ -239,7 +239,7 @@ def main():
     if len(sys.argv) < 2:
         print("用法：python qa.py <文档目录> [问题]")
         print("  第一次运行会先建索引，之后直接问答。")
-        print("  依赖：ollama serve 已启动，且已 pull bge-m3 和 qwen3:8b。")
+        print("  依赖：ollama serve 已启动，且已 pull bge-m3 和 qwen3:4b。")
         return
 
     docs_dir = sys.argv[1]
