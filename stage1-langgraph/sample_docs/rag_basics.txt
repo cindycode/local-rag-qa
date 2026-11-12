@@ -9,4 +9,4 @@ RAG 解决了两个关键问题：
 - 幻觉：LLM 只根据检索到的上下文回答，不凭空编造。
 - 知识时效：知识库可以随时更新，不需要重新训练模型。
 
-常用的向量数据库有 Chroma、FAISS、Milvus 等。本项目的 Stage 1 用的是 Chroma。
+常用的向量数据库有 Qdrant、Chroma、FAISS、Milvus 等。本项目的 Stage 1 用的是 Qdrant（本地嵌入式模式，免 Docker）。
