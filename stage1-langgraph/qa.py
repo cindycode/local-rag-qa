@@ -87,7 +87,7 @@ def _make_generate(llm):
             f"[{i+1}] {doc}" for i, doc in enumerate(state["documents"])
         )
         prompt = (
-            "你是一个严谨的知识库问答助手。\n"
+            "/no_think 你是一个严谨的知识库问答助手。\n"
             "规则：只根据下面给定的上下文回答，不要编造上下文之外的内容。\n"
             "如果上下文不足以回答，请直接说「根据现有资料无法回答」。\n\n"
             f"上下文：\n{context}\n\n"

@@ -82,28 +82,29 @@ python qa.py /path/to/your/docs "你的问题"
 
 ---
 
-## 验证准确性（RAGAS 评测）
+## 验证准确性（轻量评测，不依赖 ragas）
 
-用 [RAGAS](https://docs.ragas.io) 的 LLM-as-Judge 给知识库打分，四个指标（0~1）：
+用本地 qwen3 做 LLM-as-Judge，给知识库打三层分（0~1，越高越好）：
 
-| 指标 | 含义 |
-|---|---|
-| faithfulness | 答案忠实度：有没有被检索上下文支持（测幻觉） |
-| answer_relevancy | 答案相关性：有没有正面回答问题 |
-| context_precision | 上下文精度：检索到的片段里相关的占比 |
-| context_recall | 上下文召回：该召回的片段都召回了没 |
+| 层 | 指标 | 含义 |
+|---|---|---|
+| 检索层 | 关键词召回率 | 标准答案的关键词有多少出现在检索到的片段里（硬指标，测「找得准不准」） |
+| 生成层 | 忠实度 / 相关性 | 答案有没有被上下文支撑（测幻觉）、有没有正面回答问题（qwen3 裁判） |
+| 边界题 | 诚实度 | 文档里没答案时，模型是否老实说「无法回答」而不是编造 |
 
 ```bash
-# 先装评测依赖
-pip install ragas datasets
-
 # 跑评测（Ollama 保持运行）
 cd stage1-langgraph
-python ../eval/eval_qa.py --docs_dir ./sample_docs
+python ../eval/eval_local.py --docs_dir ./sample_docs
 ```
 
-结果会打印每道题分数 + 平均分，并落到 `eval/ragas_result.csv`。
+结果会打印每道题分数 + 分类汇总（普通题 / 边界题），并落到 `eval/eval_result.csv`。
 **四阶段换内核时各跑一遍，就能横向对比「哪个内核检索/生成更准」**——这是本仓库「用评测逼出内核优劣」的核心。
+
+> 说明：曾尝试用 [RAGAS](https://docs.ragas.io)，但它 0.4.x 依赖 langchain-community
+> 里已被移除的 `vertexai` 模块，安装/导入链路脆弱。故改用自建的轻量评测
+> （`eval/eval_local.py`），零第三方评测依赖、逻辑透明、还能自定义「边界题诚实度」这类
+> 通用库给不了的指标。
 
 ---
 
@@ -121,7 +122,7 @@ local-rag-qa/
 ├── stage3-deepseek/    # （规划中）DeepSeek Super-Agent 内核
 ├── stage4-codex/       # （规划中）Codex 内核
 ├── docs/               # 各内核的设计笔记
-├── eval/               # RAGAS 评测（qa_testset.py 测试集 + eval_qa.py 评测脚本）
+├── eval/               # 评测（qa_testset.py 测试集 + eval_local.py 轻量评测脚本）
 └── README.md
 ```
 
